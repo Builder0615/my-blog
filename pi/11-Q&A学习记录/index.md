@@ -1,6 +1,6 @@
 # Q&A 学习记录
 
-本文件记录学习过程中“没看懂、发起二次提问”的问题。
+读源码的时候，总有一些“当时没看懂、问完才明白”的问题。我直接记在这里，包括当时的背景、问完之后的回答，以及到底解决了没有。
 
 ## 记录格式
 
@@ -25,7 +25,7 @@
 - 源码位置：
   - [Pi](https://github.com/earendil-works/pi)
   - [Grok Build](https://github.com/xai-org/grok-build)
-- 回答摘要：先以 Pi 为蓝本。理由：Pi 是 TypeScript 分层的 agent toolkit，核心循环在单个可读文件里，有架构文档、SDK 示例和评测；Grok Build 是 Rust 大仓库（约百万行、近百 crate），适合掌握基础后研究生产级细节，不适合入门通读。
+- 回答摘要：先以 Pi 为蓝本。Pi 是 TypeScript 分层的 agent toolkit，核心循环在单个可读文件里，有架构文档、SDK 示例和评测；Grok Build 是 Rust 大仓库（约百万行、近百 crate），适合掌握基础后研究生产级细节，不适合入门通读。
 - 是否解决：是
 
 ## 待记录区

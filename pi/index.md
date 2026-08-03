@@ -1,8 +1,8 @@
 # Pi 学习文档
 
-本套文档以 [Pi](https://github.com/earendil-works/pi)（earendil-works/pi）源码为蓝本，记录学习 Agent 开发的完整过程。
+这套文档是我对照 [Pi](https://github.com/earendil-works/pi)（earendil-works/pi）源码写的学习笔记，记录我理解 Agent 开发的完整过程。
 
-仓库是公开的，本项目不保存源码副本；所有源码引用均使用 GitHub HTTPS 链接。建议按编号顺序阅读，每一章都建立在前一章的概念之上。
+仓库是公开的，所以这里不保存源码副本，所有源码引用都直接给 GitHub 链接。章节按编号排序，后面的内容会用到前面建立的概念，建议顺着读。
 
 ## 章节
 

@@ -1,13 +1,8 @@
 # 09 协议、存储与评测
 
-## 本章学习目标
+这一章把 Pi 里三个比较“外围”的包放在一起看：`pi-protocol` 管跨进程通信，`pi-storage` 管会话持久化，`pi-evals` 管行为回归。它们不像核心循环那么显眼，但都是把一个 Agent 变成产品的必要条件。
 
-- 能说清 `pi-protocol` 的帧格式和为什么用 CBOR。
-- 能读懂 SQLite 会话存储的关键表设计。
-- 能看懂 `pi-evals` 如何用真实 `AgentSession` 跑行为评测。
-- 知道协议、存储、评测分别在什么场景使用。
-
-## 源码地图
+## 先看哪些文件
 
 | 文件 | 作用 |
 | --- | --- |
@@ -19,13 +14,9 @@
 | [packages/evals/src/pi-harness.ts](https://github.com/earendil-works/pi/blob/main/packages/evals/src/pi-harness.ts) | Pi 评测 harness |
 | [packages/evals/src/smoke.eval.ts](https://github.com/earendil-works/pi/blob/main/packages/evals/src/smoke.eval.ts) | 最小评测示例 |
 
-## 正文
+## 协议 = 帧 + CBOR 载荷
 
-### 1. 内容点：协议 = 帧 + CBOR 载荷
-
-**结论**：每条协议消息是 `[4 字节大端长度][CBOR 载荷]`；帧解决“消息边界”，CBOR 解决“紧凑编码与严格校验”。
-
-**源码位置**：[framing.ts](https://github.com/earendil-works/pi/blob/main/packages/protocol/src/framing.ts)
+每条协议消息是 `[4 字节大端长度][CBOR 载荷]`。帧解决消息边界，CBOR 解决紧凑编码与严格校验：
 
 ```typescript
 export function encodeFrame(payload: Uint8Array): Uint8Array {
@@ -41,16 +32,12 @@ export function encodeFrame(payload: Uint8Array): Uint8Array {
 }
 ```
 
-**讲解**：
-
-- 大端 4 字节长度让接收端可以增量解析任意分片/合并的字节流。
+- 大端 4 字节长度让接收端可以增量解析任意分片或合并的字节流。
 - `FrameDecoder` 处理“一个 chunk 可能包含多个帧、或只包含半个帧”的流式情况。
 
-### 2. 内容点：schema 刻意做成“严格模式”
+## schema 刻意做成“严格模式”
 
-**结论**：协议消息用 TypeBox 定义，并默认 `additionalProperties: false`，未知字段直接拒绝，保证跨语言实现不会产生歧义。
-
-**源码位置**：[schemas.ts](https://github.com/earendil-works/pi/blob/main/packages/protocol/src/schemas.ts)
+协议消息用 TypeBox 定义，并默认 `additionalProperties: false`，未知字段直接拒绝，保证跨语言实现不会产生歧义：
 
 ```typescript
 const StrictObject = <const T extends Parameters<typeof Type.Object>[0]>(properties: T) =>
@@ -62,16 +49,12 @@ export const ModelRefSchema = StrictObject({
 });
 ```
 
-**讲解**：
+- 拒绝未知字段意味着新旧版本之间需要显式版本升级，而不是静默吞掉。
+- 跨进程、跨语言协议里，严格 schema 是减少 bug 最便宜的手段。
 
-- “拒绝未知字段”意味着新旧版本之间需要显式版本升级，而不是静默吞掉。
-- 学习价值：跨进程/跨语言协议里，严格 schema 是减少 bug 的最便宜手段。
+## SQLite 表设计服务于“分支读取”
 
-### 3. 内容点：SQLite 表设计服务于“分支读取”
-
-**结论**：会话原始数据进 `session_entries`，分支关系进 `branch_entries`，物化视图加速常用查询。
-
-**源码位置**：[001_initial.sql](https://github.com/earendil-works/pi/blob/main/packages/storage/sqlite-node/src/sqlite/migrations/001_initial.sql)
+会话原始数据进 `session_entries`，分支关系进 `branch_entries`，物化视图加速常用查询：
 
 ```sql
 CREATE TABLE IF NOT EXISTS branch_entries (
@@ -86,17 +69,13 @@ CREATE INDEX IF NOT EXISTS idx_branch_entries_session_branch_seq
 	ON branch_entries(session_id, branch_id, entry_seq);
 ```
 
-**讲解**：
-
-- `branch_id + entry_seq` 索引让“按分支顺序读”变成顺序扫描。
+- `branch_id + entry_seq` 索引让按分支顺序读变成顺序扫描。
 - `session_materialized` 存整条会话的快照载荷，适合频繁读取的场景。
-- 与 JSONL 后端相比，SQLite 的查询能力（FTS、物化视图）更强，代价是存储结构更复杂。
+- 和 JSONL 后端比，SQLite 的查询能力（FTS、物化视图）更强，代价是存储结构更复杂。
 
-### 4. 内容点：评测用真实 Agent 会话而不是 mock
+## 评测用真实 Agent 会话而不是 mock
 
-**结论**：`pi-harness.ts` 创建真实的 `AgentSession`，把 prompt 跑成真实消息序列，再转成 `vitest-evals` 的 transcript 做断言。
-
-**源码位置**：[pi-harness.ts](https://github.com/earendil-works/pi/blob/main/packages/evals/src/pi-harness.ts)
+`pi-harness.ts` 创建真实的 `AgentSession`，把 prompt 跑成真实消息序列，再转成 `vitest-evals` 的 transcript 做断言：
 
 ```typescript
 async function promptAgent(session: AgentSession, input: string, signal: AbortSignal | undefined): Promise<string> {
@@ -117,16 +96,12 @@ async function promptAgent(session: AgentSession, input: string, signal: AbortSi
 }
 ```
 
-**讲解**：
-
 - 评测直接驱动真实会话，才能测出 prompt、工具、skill、model 之间的真实交互。
 - `toTranscriptEvents` 把会话消息转成 tool_call / tool_result 等结构化事件，方便断言模型行为。
 
-### 5. 内容点：最小评测长这样
+## 最小评测长这样
 
-**结论**：用 `describeEval` + harness，一个断言就能验证“端到端能跑通”。
-
-**源码位置**：[smoke.eval.ts](https://github.com/earendil-works/pi/blob/main/packages/evals/src/smoke.eval.ts)
+用 `describeEval` + harness，一个断言就能验证“端到端能跑通”：
 
 ```typescript
 import { expect } from "vitest";
@@ -145,17 +120,15 @@ describeEval("Pi Coding Agent smoke", { harness: piCodingAgentHarness }, (it) =>
 });
 ```
 
-**讲解**：
-
-- 运行方式（见 [evals/README.md](https://github.com/earendil-works/pi/blob/main/packages/evals/README.md)）：
+运行方式见 [evals/README.md](https://github.com/earendil-works/pi/blob/main/packages/evals/README.md)：
 
 ```bash
 npm run eval -- --provider openai --model gpt-5.6-sol
 ```
 
-- 学习价值：Agent 项目的回归测试离不开“真实模型评测”，这套结构可以直接借用。
+Agent 项目的回归测试离不开真实模型评测，这套结构可以直接借到自己的项目里。
 
-## 小结
+## 概念速查
 
 | 模块 | 解决什么问题 | 关键设计 |
 | --- | --- | --- |
@@ -163,13 +136,13 @@ npm run eval -- --provider openai --model gpt-5.6-sol
 | `pi-storage` | 会话持久化 | entry 树 + 分支索引 + 物化视图 |
 | `pi-evals` | 行为回归 | 真实会话 + transcript + 断言 |
 
-## 练习与思考
+## 动手验证
 
 1. 用 `encodeFrame` 手工构造一帧，再用 `FrameDecoder` 分两次喂入，观察解码结果。
 2. 在 SQLite 表结构里找“分支读取”需要的全部索引，说明查询路径。
 3. 给 `smoke.eval.ts` 增加一个“必须调用指定工具”的断言。
 
-## 延伸问题
+## 我还没想明白的问题
 
 - 为什么协议版本号放在消息 schema 里而不是只靠包版本？
 - `branch_entries` 和 `session_entries.entry_seq` 各承担什么职责？可以只留一个吗？
