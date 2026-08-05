@@ -4,4 +4,5 @@
 
 ## 博客列表
 
-- [Pi 学习文档](pi/)：以 [Pi](https://github.com/earendil-works/pi) 源码为蓝本，记录学习 Agent 开发的完整过程，10 章正文 + Q&A，每章一个子目录。
+- [Pi 学习文档](pi/)：以 [Pi](https://github.com/earendil-works/pi) 源码为蓝本，记录模型、Agent loop、session、TUI、协议和评测的分层阅读过程，并附前置概念与 Q&A。
+- [Grok Build 学习文档](grok%20build/)：以 [xai-org/grok-build](https://github.com/xai-org/grok-build) 源码为蓝本，按 Rust workspace 的复杂度拆分成分层教程，覆盖 Agent、工具、会话、沙箱、扩展和终端界面。

@@ -91,7 +91,7 @@ function coercePrimitiveByType(value: unknown, type: string): unknown {
 
 - 模型的 JSON 工具参数经常出现类型漂移，比如数字被序列化成字符串。
 - 先纠正再校验，比直接拒绝更宽容，能减少模型改口重试的成本。
-- 纠正不是无条件的，转换不了的值仍会原样返回，最后由校验决定成败。
+- 纠正不是无条件的，转换不了的值仍会原样返回，再由校验决定成败。
 
 ## `prepareToolCall` 是工具执行的“安检门”
 
@@ -161,7 +161,7 @@ async function executePreparedToolCall(prepared, signal, emit) {
 
 ## `sequential` 与 `parallel` 的差异
 
-串行模式逐个执行；并行模式先逐个 preflight，再并发执行，最后按助手消息里的原始顺序生成 toolResult 消息：
+串行模式逐个执行；并行模式先逐个 preflight，再并发执行，再按助手消息里的原始顺序生成 toolResult 消息：
 
 ```typescript
 async function executeToolCalls(currentContext, assistantMessage, config, signal, emit) {

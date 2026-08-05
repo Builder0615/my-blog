@@ -52,7 +52,7 @@ graph TB
 
 ## 阶段四，产品化与评测
 
-最后把 Agent 变成别人能用的东西：
+再把 Agent 变成别人能用的东西：
 
 1. 用 `createAgentSession` 把 Agent 嵌入一个 Node 脚本或 Web 服务。
 2. 仿照 `smoke.eval.ts` 写 3 个评测：基础问答、工具调用、错误恢复。

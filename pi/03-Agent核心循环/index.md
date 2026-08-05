@@ -218,7 +218,7 @@ case "toolcall_delta":
 	break;
 ```
 
-- `start` 时把 partial 消息压入上下文，后续每个 delta 都替换最后一个元素。
+- `start` 时把 partial 消息压入上下文，后续每个 delta 都替换末尾元素。
 - `done/error` 时用 `response.result()` 拿到最终消息并替换。
 - 所以事件里携带完整 `partial`：循环侧只需要赋值，不需要拼接。
 

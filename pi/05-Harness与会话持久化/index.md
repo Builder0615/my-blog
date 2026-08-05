@@ -8,10 +8,10 @@
 | --- | --- |
 | [packages/agent/src/harness/agent-harness.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/agent-harness.ts) | 编排层：phase、turn 快照、持久化、hook |
 | [packages/agent/src/harness/session/session.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/session/session.ts) | 会话树、上下文构建 |
-| [packages/agent/src/harness/session/jsonl-repo.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/session/jsonl-repo.ts) | JSONL 会话存储 |
-| [packages/agent/src/harness/session/repository.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/session/repository.ts) | `SessionRepository` 接口与 fork 语义 |
+| [packages/agent/src/harness/session/types.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/session/types.ts) | entry、record、lane 和 query 类型 |
+| [packages/agent/src/harness/session/session.ts](https://github.com/earendil-works/pi/blob/main/packages/agent/src/harness/session/session.ts) | session entry、lane 和 branch 操作 |
 | [packages/storage/sqlite-node/src/sqlite/migrations/001_initial.sql](https://github.com/earendil-works/pi/blob/main/packages/storage/sqlite-node/src/sqlite/migrations/001_initial.sql) | SQLite 初始表结构 |
-| [packages/agent/docs/agent-harness.md](https://github.com/earendil-works/pi/blob/main/packages/agent/docs/agent-harness.md) | Harness 生命周期设计文档 |
+| [packages/agent/docs/harness-v2.md](https://github.com/earendil-works/pi/blob/main/packages/agent/docs/harness-v2.md) | 当前 Harness 生命周期设计文档 |
 
 ## 为什么低层循环之上还需要一个 Harness
 
@@ -186,4 +186,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_session_entries_session_seq ON session_ent
 
 - 为什么 Harness 选择 settlement 时 flush pending writes，而不是每次事件都同步写？
 - 会话树里的 `model_change` 和 `thinking_level_change` entry 为什么也要参与上下文构建？
-- 如果一次运行中途进程崩溃，JSONL 和 SQLite 哪个更可能丢失最后几条消息？为什么？
+- 如果一次运行中途进程崩溃，JSONL 和 SQLite 哪个更可能丢失末尾几条消息？为什么？
